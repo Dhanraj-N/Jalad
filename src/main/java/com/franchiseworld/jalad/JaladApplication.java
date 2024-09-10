@@ -1,4 +1,4 @@
-package com.franchiseworld.jalad;
+ package com.franchiseworld.jalad;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

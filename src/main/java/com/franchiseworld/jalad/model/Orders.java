@@ -1,0 +1,100 @@
+package com.franchiseworld.jalad.model;
+
+import java.time.LocalDate;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorColumn;
+import jakarta.persistence.DiscriminatorType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import lombok.Data;
+
+@Entity
+@Data
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "order_type", discriminatorType = DiscriminatorType.STRING)
+public class Orders {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long orderId;
+
+    private Long shippingId; // Auto-generated shippingId
+    @Column(name = "orderDate", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    private LocalDate orderDate;
+    private String createdBy; // Name of the placer
+    private String pickupAddress;
+    private String deliveryAddress;
+    
+    
+    @ManyToOne
+    @JoinColumn(name = "id", nullable = false)
+    @JsonBackReference
+    private Users users;
+    
+    @ManyToOne
+  @JoinColumn(name = "zone_id", nullable = false)
+  private Zone zone;
+    
+    //Handle only zone manager
+    @Enumerated(EnumType.STRING)
+	private Status status = Status.DATA_RECEIVED;
+    
+    //Status Change well be automatically data change Handle Zone manager
+    // Date fields for each status
+    private LocalDate dataReceivedDate;
+    private LocalDate pickupDoneDate;
+    private LocalDate inTransitDate;
+    private LocalDate reachedDestinationDate;
+    private LocalDate outForDeliveryDate;
+    private LocalDate deliveredDate;
+    
+    public void setStatus(Status status) {
+        this.status = status;
+
+        // Update corresponding date fields based on the status
+        LocalDate currentDate = LocalDate.now();
+        switch (status) {
+            case DATA_RECEIVED:
+                if (this.dataReceivedDate == null) {
+                    this.dataReceivedDate = currentDate;
+                }
+                break;
+            case PICKUP_DONE:
+                if (this.dataReceivedDate != null && this.pickupDoneDate == null) {
+                    this.pickupDoneDate = currentDate;
+                }
+                break;
+            case INTRANSIT:
+                if (this.pickupDoneDate != null && this.inTransitDate == null) {
+                    this.inTransitDate = currentDate;
+                }
+                break;
+            case REACHED_DESTINATION:
+                if (this.inTransitDate != null && this.reachedDestinationDate == null) {
+                    this.reachedDestinationDate = currentDate;
+                }
+                break;
+            case OUT_OF_DELIVERY:
+                if (this.reachedDestinationDate != null && this.outForDeliveryDate == null) {
+                    this.outForDeliveryDate = currentDate;
+                }
+                break;
+            case DELIVERED:
+                if (this.outForDeliveryDate != null && this.deliveredDate == null) {
+                    this.deliveredDate = currentDate;
+                }
+                break;
+        }
+    }
+}

@@ -1,5 +1,8 @@
 package com.franchiseworld.jalad.service;
 
-public interface AdminService {
+import com.franchiseworld.jalad.ResponseHandler.ApiResponse;
+import org.springframework.http.ResponseEntity;
 
+public interface AdminService {
+    ResponseEntity<ApiResponse> findZoneByCityAndState(String city, String state);
 }
