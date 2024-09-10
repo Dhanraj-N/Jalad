@@ -1,3 +1,4 @@
+/*
 package com.franchiseworld.jalad.serviceimplementation;
 
 import java.util.List;
@@ -68,6 +69,7 @@ public class QueryServiceImpl implements QueryService {
 		return null;
 	}
 
+*/
 /*
 	@Override
 	public ResponseEntity<ApiResponse> updateStatus(Long id, String status) {
@@ -88,5 +90,6 @@ public class QueryServiceImpl implements QueryService {
 		} else {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse(false, 404, "Id Not Found"));
 		}
-	}*/
-}
+	}*//*
+
+}*/
