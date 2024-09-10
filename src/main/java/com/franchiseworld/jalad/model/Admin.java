@@ -16,5 +16,24 @@ public class Admin {
 
 	private String emailId;
 	private String password;
+	public Long getAdminId() {
+		return adminId;
+	}
+	public void setAdminId(Long adminId) {
+		this.adminId = adminId;
+	}
+	public String getEmailId() {
+		return emailId;
+	}
+	public void setEmailId(String emailId) {
+		this.emailId = emailId;
+	}
+	public String getPassword() {
+		return password;
+	}
+	public void setPassword(String password) {
+		this.password = password;
+	}
+	
 
 }
