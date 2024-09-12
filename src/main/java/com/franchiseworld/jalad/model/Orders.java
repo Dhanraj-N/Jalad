@@ -17,6 +17,7 @@ import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Entity
@@ -28,15 +29,15 @@ public class Orders {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long orderId;
-
-    private Long shippingId; // Auto-generated shippingId
     @Column(name = "orderDate", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDate orderDate;
     private String createdBy; // Name of the placer
+    @Size(max = 255, message = "pickupAddress cannot be longer than 255 characters")
     private String pickupAddress;
+    @Size(max = 255, message = "deliveryAddress cannot be longer than 255 characters")
     private String deliveryAddress;
-    
-    
+
+
     @ManyToOne
     @JoinColumn(name = "id", nullable = false)
     @JsonBackReference
@@ -49,7 +50,11 @@ public class Orders {
     //Handle only zone manager
     @Enumerated(EnumType.STRING)
 	private Status status = Status.DATA_RECEIVED;
-    
+    public Orders() {
+        if (this.orderDate == null) {
+            this.orderDate = LocalDate.now();
+        }
+    }
     //Status Change well be automatically data change Handle Zone manager
     // Date fields for each status
     private LocalDate dataReceivedDate;
@@ -58,9 +63,10 @@ public class Orders {
     private LocalDate reachedDestinationDate;
     private LocalDate outForDeliveryDate;
     private LocalDate deliveredDate;
-    
+
     public void setStatus(Status status) {
         this.status = status;
+
 
         // Update corresponding date fields based on the status
         LocalDate currentDate = LocalDate.now();
@@ -96,5 +102,6 @@ public class Orders {
                 }
                 break;
         }
+
     }
 }

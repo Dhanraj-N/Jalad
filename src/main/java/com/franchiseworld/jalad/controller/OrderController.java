@@ -2,8 +2,11 @@ package com.franchiseworld.jalad.controller;
 
 
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
+import com.franchiseworld.jalad.model.Status;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,8 +36,8 @@ public class OrderController {
         Orders savedOrder = orderService.saveBusinessCourier(businessCourier);
         return new ResponseEntity<>(savedOrder, HttpStatus.CREATED);
     }
-    
-  //FindByContactNO All Courier.
+
+    //FindByContactNO All Courier.
 //    @GetMapping("/personal/findcontact")
 //    public ResponseEntity<List<PersonalCourierDTO>> findByContactNo(@RequestParam Long contactNo) {
 //        List<PersonalCourierDTO> couriers = orderService.findByContactNo(contactNo);
@@ -45,18 +48,14 @@ public class OrderController {
     public List<Object[]> getOrdersByContactNo(@RequestParam("contactNo") Long contactNo) {
         return orderService.findOrdersByContactNo(contactNo);
     }
-    
-  //FindAllBusinessOrders Only Business Orders
+
+    //FindAllBusinessOrders Only Business Orders
     @GetMapping("/AllbusinessOrders")
     public List<Object[]> getAllBusinessOrders() {
         return orderService.findAllBusinessOrders();
     }
 
-    /*@GetMapping("/AllbusinessOrders")
-    public List<Object[]> getAllPersonalOrders() {
-        return orderService.findAllPersonalOrders();
-    }*/
-    
+
     //FindAllBusinessOrdersUserID Only Business Orders
 
     @GetMapping("/findBusinessOrdersByUserId/{userId}")
@@ -64,20 +63,38 @@ public class OrderController {
         List<Object[]> businessOrders = orderService.findBusinessOrdersByUserId(userId);
         return ResponseEntity.ok(businessOrders);
     }
-    
+
+    // findbyuserbyUserId
     @GetMapping("/getOrdersByUserId/{userId}")
     public ResponseEntity<ApiResponse> getOrdersByUserId(@PathVariable Long userId) {
         return orderService.getOrdersByUserId(userId);
     }
 
-    // for getting sumary of all orders in admin module ---suhas----
-    @GetMapping("/getByStatusCount")
-    public ResponseEntity<ApiResponse> getByStatusCount(){
-
-        return orderService.getByStatusCount();
+    //business Count of StatusOrders(Status:- pending, deliverdy etc)
+    @GetMapping("/countBusinessOrdersByStatusAndUserId/{userId}")
+    public ResponseEntity<Map<Status, Long>> countBusinessOrdersByStatusAndUserId(@PathVariable Long userId) {
+        Map<Status, Long> orderCounts = orderService.countBusinessOrdersByStatusAndUserId(userId);
+        return ResponseEntity.ok(orderCounts);
     }
 
+    //GetOrdersDates
+    @GetMapping("/getOrderDates/{orderId}")
+    public ResponseEntity<Map<String, LocalDate>> getOrderDates(@PathVariable Long orderId) {
+        Map<String, LocalDate> orderDates = orderService.getOrderDates(orderId);
+        return ResponseEntity.ok(orderDates);
+    }
+
+
+    // for getting sumary of all orders in admin module
+    @GetMapping("/countOrdersByStatus")
+    public ResponseEntity<Map<Status, Long>> countOrdersByStatus() {
+        Map<Status, Long> orderCounts = orderService.countOrdersByStatus();
+        return ResponseEntity.ok(orderCounts);
+    }
+
+
     //zone
+    //////// update status, zone id,zone detail
     @PutMapping("/statusDetail/{orderId}")
     public ResponseEntity<Orders> updateOrderStatusAndZone(
             @PathVariable Long orderId,

@@ -13,7 +13,7 @@ public interface ZoneService {
     Optional<Zone> login(Long zoneCode, String password);
 
 
-    ResponseEntity<ApiResponse> updateZone(Long zoneId, Zone zoneDetail);
+    /*ResponseEntity<ApiResponse> updateZone(Long zoneId, Zone zoneDetail);*/
 
     public ResponseEntity <List<Orders>> getAllTodayOrder(Long zoneId);
 

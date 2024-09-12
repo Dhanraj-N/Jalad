@@ -2,14 +2,9 @@ package com.franchiseworld.jalad.model;
 
 import java.util.Set;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Entity
@@ -19,10 +14,15 @@ public class Zone {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long zoneId;
-
+	@Column(nullable = false)
+	@NotBlank(message = "name is required")
 	private String name;
+	@Size(max = 100, message = "City cannot be longer than 100 characters")
 	private String city;
+	@Size(max = 100, message = "State cannot be longer than 100 characters")
 	private String state;
+	@Column(nullable = false)
+	@NotBlank(message = "Password is required")
 	private String password;
 	private Long zoneCode;
 	

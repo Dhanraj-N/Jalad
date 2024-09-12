@@ -1,8 +1,11 @@
 package com.franchiseworld.jalad.service;
 
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
+import com.franchiseworld.jalad.model.Status;
 import org.springframework.http.ResponseEntity;
 
 import com.franchiseworld.jalad.ResponseHandler.ApiResponse;
@@ -11,7 +14,9 @@ import com.franchiseworld.jalad.model.Orders;
 import com.franchiseworld.jalad.model.PersonalCourier;
 
 public interface OrderService {
-	//save Courier
+
+
+    //save Courier
     Orders savePersonalCourier(PersonalCourier personalCourier);
     Orders saveBusinessCourier(BusinessCourier businessCourier);
     
@@ -23,18 +28,26 @@ public interface OrderService {
     
   //AllBusinessordersbyuserID
     List<Object[]> findBusinessOrdersByUserId(Long userId);
-    
-  //Count of StatusOrders(Status:- pending, deliverdy etc)
-    List<Object[]> countBusinessOrdersByStatusAndUserId(Long userId);
 
-  //getUsersById
+    //Count of StatusOrders(Status:- pending, deliverdy etc)
+    Map<Status, Long> countBusinessOrdersByStatusAndUserId(Long userId);
+
+    //GetOrdersDates web
+    Map<String, LocalDate> getOrderDates(Long orderId);
+
+   //getUsersById
     ResponseEntity<ApiResponse> getOrdersByUserId(Long id);
 
-   /* //update status in zonemanager
-    Orders updateOrderStatus(Long orderId, String status);*/
 
-    //update status, zone id,zone detail
+    ///////////////update status, zone id,zone detail
     public Orders updateOrderStatusAndZone(Long orderId, String status, Long zoneId);
+    // admin count
     ResponseEntity<ApiResponse> getByStatusCount();
 
-}
+
+// admin count summery
+Map<Status, Long> countOrdersByStatus();
+
+
+
+    }
