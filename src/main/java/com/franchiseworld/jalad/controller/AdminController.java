@@ -18,10 +18,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminController {
     @Autowired
     AdminService adminService;
-    @GetMapping("/findZoneByCityAndState")
-    public ResponseEntity<ApiResponse> findZoneByCityAndState(@RequestParam String city, @RequestParam String state){
-        return  adminService.findZoneByCityAndState(city,state);
-    }
+
+
 
     @PostMapping("/createAdmin")
     public ResponseEntity<ApiResponse> createAdmin(@RequestBody Admin admin){
@@ -40,4 +38,8 @@ public class AdminController {
         return adminService.resetPassword(emailId, oldPassword, newPassword);
     }
 
+    @GetMapping("/findZoneByCityAndState")
+    public ResponseEntity<ApiResponse> findZoneByCityAndState(@RequestParam String city, @RequestParam String state) {
+        return adminService.findZoneByCityAndState(city, state);
+    }
 }

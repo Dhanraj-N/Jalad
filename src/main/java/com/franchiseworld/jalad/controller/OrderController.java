@@ -52,10 +52,6 @@ public class OrderController {
         return orderService.findAllBusinessOrders();
     }
 
-    /*@GetMapping("/AllbusinessOrders")
-    public List<Object[]> getAllPersonalOrders() {
-        return orderService.findAllPersonalOrders();
-    }*/
     
     //FindAllBusinessOrdersUserID Only Business Orders
 
@@ -64,20 +60,29 @@ public class OrderController {
         List<Object[]> businessOrders = orderService.findBusinessOrdersByUserId(userId);
         return ResponseEntity.ok(businessOrders);
     }
-    
+    // findbyuserbyUserId
     @GetMapping("/getOrdersByUserId/{userId}")
     public ResponseEntity<ApiResponse> getOrdersByUserId(@PathVariable Long userId) {
         return orderService.getOrdersByUserId(userId);
     }
 
-    // for getting sumary of all orders in admin module ---suhas----
-    @GetMapping("/getByStatusCount")
-    public ResponseEntity<ApiResponse> getByStatusCount(){
+    //business Count of StatusOrders(Status:- pending, deliverdy etc)
+    @GetMapping("/countBusinessOrdersByStatusAndUserId/{userId}")
+    public ResponseEntity<List<Object[]>> countBusinessOrdersByStatusAndUserId(@PathVariable Long userId) {
+        List<Object[]> orderCounts = orderService.countBusinessOrdersByStatusAndUserId(userId);
+        return ResponseEntity.ok(orderCounts);
+    }
 
-        return orderService.getByStatusCount();
+    // for getting sumary of all orders in admin module
+
+    @GetMapping("/countOrdersByStatus")
+    public ResponseEntity<List<Object[]>> countOrdersByStatus() {
+        List<Object[]> orderCounts = orderService.countOrdersByStatus();
+        return ResponseEntity.ok(orderCounts);
     }
 
     //zone
+    //////// update status, zone id,zone detail
     @PutMapping("/statusDetail/{orderId}")
     public ResponseEntity<Orders> updateOrderStatusAndZone(
             @PathVariable Long orderId,
@@ -87,5 +92,4 @@ public class OrderController {
         Orders updatedOrder = orderService.updateOrderStatusAndZone(orderId, status, zoneId);
         return ResponseEntity.ok(updatedOrder);
     }
-
 }

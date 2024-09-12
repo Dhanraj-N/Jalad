@@ -33,11 +33,12 @@ public class ZoneController {
         }
     }
 
-    @PutMapping("updatezone/{zoneId}")
+  /*  @PutMapping("updatezone/{zoneId}")
     public ResponseEntity<ApiResponse> updateZone(@PathVariable Long zoneId, @Valid @RequestBody Zone zoneDetail)
     {
         return zoneService.updateZone(zoneId,zoneDetail);
-    }
+    }*/
+    // Todays Order
     @GetMapping("/{zoneId}/todayorder")
     public ResponseEntity<List<Orders>> getAllTodayOrder(@PathVariable ("zoneId") Long zoneId)  //(@PathVariable Long zoneId)
     {
@@ -59,7 +60,7 @@ public class ZoneController {
             return ResponseEntity.notFound().build(); // Return 404 Not Found if no orders are found
         }
     }
-
+//getinformationbyzone id
     @GetMapping("/{zoneId}")
     public ResponseEntity<Zone> getZoneById(@PathVariable Long zoneId) {
         Zone zone = zoneService.getZoneById(zoneId);

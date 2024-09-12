@@ -1,3 +1,4 @@
+/*
 package com.franchiseworld.jalad.service;
 
 import org.springframework.data.jpa.repository.Query;
@@ -12,3 +13,4 @@ public interface QueryService {
 	ResponseEntity<ApiResponse> updateStatus(Long id, String status);
 
 }
+*/

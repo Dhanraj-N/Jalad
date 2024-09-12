@@ -30,7 +30,7 @@ public class ZoneServiceImpl implements ZoneService {
     public Optional<Zone> login(Long zoneCode, String password) {
         return zoneRepository.findByZoneCodeAndPassword(zoneCode, password);
     }
-    @Override
+    /*@Override
     public ResponseEntity<ApiResponse> updateZone(Long zoneId, Zone zoneDetail) {
         try
         {
@@ -58,7 +58,7 @@ public class ZoneServiceImpl implements ZoneService {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse(false,500,"Internal Server Error"));
         }
 
-    }
+    }*/
     @Override
     public ResponseEntity <List<Orders>> getAllTodayOrder(Long zoneId) {
         //  LocalDate today= LocalDate.now();  //new comment
