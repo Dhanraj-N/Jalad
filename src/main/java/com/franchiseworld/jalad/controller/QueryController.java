@@ -1,3 +1,4 @@
+/*
 package com.franchiseworld.jalad.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,3 +46,4 @@ public class QueryController {
 
 
 }
+*/
