@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.Map;
 
 import com.franchiseworld.jalad.model.Status;
+import com.franchiseworld.jalad.modeldto.OrderDto;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 
 import com.franchiseworld.jalad.ResponseHandler.ApiResponse;
@@ -19,15 +22,15 @@ public interface OrderService {
     //save Courier
     Orders savePersonalCourier(PersonalCourier personalCourier);
     Orders saveBusinessCourier(BusinessCourier businessCourier);
-    
-    //FindByContactNO All Courier.
-    List<Object[]> findOrdersByContactNo(Long contactNo);
+
+    //findAll personal Orders By Contact Number
+    Page<Object[]> findOrdersByContactNo(String contactNo, Pageable pageable);
     
   //FindAllBusinessOrders Only Business Orders
     List<Object[]> findAllBusinessOrders();
     
   //AllBusinessordersbyuserID
-    List<Object[]> findBusinessOrdersByUserId(Long userId);
+  Page<Object[]> findBusinessOrdersByUserId(Long userId,Pageable pageable);
 
     //Count of StatusOrders(Status:- pending, deliverdy etc)
     Map<Status, Long> countBusinessOrdersByStatusAndUserId(Long userId);
@@ -47,6 +50,16 @@ public interface OrderService {
 
 // admin count summery
 Map<Status, Long> countOrdersByStatus();
+
+// update order details admin
+ResponseEntity<ApiResponse> updateOrder(Long id, OrderDto orderUpdateDTO);
+
+// delete order admin
+ResponseEntity<ApiResponse> deleteOrder(Long id);
+
+
+// get all order admin
+    ResponseEntity<ApiResponse> getAllOrders( Integer page, Integer size);
 
 
 

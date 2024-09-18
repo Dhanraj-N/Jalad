@@ -1,22 +1,11 @@
 package com.franchiseworld.jalad.model;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.DiscriminatorColumn;
-import jakarta.persistence.DiscriminatorType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Inheritance;
-import jakarta.persistence.InheritanceType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
@@ -42,11 +31,19 @@ public class Orders {
     @JoinColumn(name = "id", nullable = false)
     @JsonBackReference
     private Users users;
-    
+
     @ManyToOne
   @JoinColumn(name = "zone_id", nullable = false)
   private Zone zone;
-    
+/*
+   // order chnages in zone details
+
+    public Orders(Long orderId, Status status) {
+        this.orderId = orderId;
+        this.status = status;
+    }*/
+
+
     //Handle only zone manager
     @Enumerated(EnumType.STRING)
 	private Status status = Status.DATA_RECEIVED;
@@ -55,6 +52,7 @@ public class Orders {
             this.orderDate = LocalDate.now();
         }
     }
+
     //Status Change well be automatically data change Handle Zone manager
     // Date fields for each status
     private LocalDate dataReceivedDate;

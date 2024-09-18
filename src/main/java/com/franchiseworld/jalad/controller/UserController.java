@@ -33,7 +33,7 @@ public class UserController {
     
 
     @PostMapping("/business")
-    public ResponseEntity<Users> createBusinessUser(@RequestBody BusinessUser businessUser ) {
+    public ResponseEntity<Users> createBusinessUser(@Valid @RequestBody BusinessUser businessUser ) {
         Users savedUser = usersService.saveBusinessUsers(businessUser);
         return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
     }

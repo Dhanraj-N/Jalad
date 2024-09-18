@@ -7,6 +7,9 @@ import com.franchiseworld.jalad.repo.OrderRepository;
 import com.franchiseworld.jalad.repo.ZoneRepository;
 import com.franchiseworld.jalad.service.ZoneService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -59,39 +62,25 @@ public class ZoneServiceImpl implements ZoneService {
         }
 
     }*/
+
+    // todays orders
     @Override
-    public ResponseEntity <List<Orders>> getAllTodayOrder(Long zoneId) {
-        //  LocalDate today= LocalDate.now();  //new comment
-        List<Orders> order=orderRepository.findOrdersByZoneIdAndOrderDate( zoneId);  //( zoneId, today);
-        //List<Orders> order=zoneRepository.findOrdersByZoneIdAndOrderDate( zoneId, today);
-        if(order.isEmpty())
-        {
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        }
-        else
-        {
-            return new ResponseEntity<>(order,HttpStatus.OK);
-        }
-    }
+    public Page<Orders> getAllTodayOrder(Long zoneId, int page, int size) {
+        LocalDate today = LocalDate.now();  //new comment
+        PageRequest pageRequest = PageRequest.of(page, size);
+        return orderRepository.findByZone_ZoneIdAndOrderDate(zoneId, today, pageRequest);
 
+    }
     // Method to get all orders by zone ID
-    public List<Orders> getAllOrderByZoneId(Long zoneId) {
-        Zone zone = zoneRepository.findById(zoneId).orElse(null);
-        if (zone != null) {
-            return (List<Orders>) zone.getOrders();    // return zone.getOrders();
-        }
-        return null; // or throw an exception if zone not found
-
+    public Page<Orders> getOrderByZoneId(Long zoneId, Pageable pageable) {
+        return orderRepository.findByZone_ZoneId(zoneId, pageable);
     }
-    // Method to get all orders by zone name
-    public List<Orders> getAllOrderByZoneName(String zoneName) {
-        Optional<Zone> zoneOptional = zoneRepository.findByName(zoneName);
-        if (zoneOptional.isPresent()) {
-            return (List<Orders>) zoneOptional.get().getOrders(); // return zoneOptional.get().getOrders();
 
-            // Return the orders if zone is found
-        }
-        return null; // Consider throwing an exception instead of returning null
+
+    // Method to get all orders by zone name
+    public Page<Orders> getAllOrderByZoneName(String zoneName, Pageable pageable)
+    {
+        return orderRepository.findByZone_Name(zoneName,pageable);
     }
 
     // Method to get Zone by zone ID

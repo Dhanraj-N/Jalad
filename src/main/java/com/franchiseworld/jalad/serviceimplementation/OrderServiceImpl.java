@@ -4,14 +4,17 @@ package com.franchiseworld.jalad.serviceimplementation;
 
 
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import com.franchiseworld.jalad.model.*;
+import com.franchiseworld.jalad.modeldto.OrderDto;
 import com.franchiseworld.jalad.repo.ZoneRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -43,14 +46,10 @@ public class OrderServiceImpl implements OrderService {
     }
 
     //FindByContactNO All Courier.
-//    @Override
-//    public List<PersonalCourierDTO> findByContactNo(Long contactNo) {
-//        return orderRepository.findByContactNo(contactNo);
-//    }
-
     @Override
-    public List<Object[]> findOrdersByContactNo(Long contactNo) {
-        return orderRepository.findByContactNo(contactNo);
+    public Page<Object[]> findOrdersByContactNo(String contactNo, Pageable pageable)
+    {
+        return orderRepository.findByContactNo(contactNo,pageable);
     }
 
     //FindAllBusinessOrders Only Business Orders
@@ -62,8 +61,10 @@ public class OrderServiceImpl implements OrderService {
     //FindAllBusinessOrdersByUserID Only Business Orders
 
     @Override
-    public List<Object[]> findBusinessOrdersByUserId(Long userId) {
-        return orderRepository.findBusinessOrdersByUserId(userId);
+    public Page<Object[]> findBusinessOrdersByUserId(Long userId,Pageable pageable)
+    {
+        return orderRepository.findBusinessOrdersByUserId(userId,pageable);
+
     }
 
     //Count of StatusOrders(Status:- pending, deliverdy etc)
@@ -125,7 +126,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
 
-    //////////////////////////update status, zone id,zone detail
+    //update status, zone id,zone detail
     @Override
     public Orders updateOrderStatusAndZone(Long orderId, String status, Long zoneId) {
         Optional<Orders> existingOrderOpt = orderRepository.findById(orderId);
@@ -173,7 +174,116 @@ public class OrderServiceImpl implements OrderService {
         return statusCountMap;
     }
 
+    // update order details crud admin
+    @Override
+    public ResponseEntity<ApiResponse> updateOrder(Long id, OrderDto orderUpdateDTO) {
+        Optional<Orders> optionalOrder = orderRepository.findById(id);
+
+        if (optionalOrder.isPresent()) {
+            Orders order = optionalOrder.get();
+
+            // Update only fields that are not null in the DTO
+
+            if (orderUpdateDTO.getCreatedBy() != null) {
+                order.setCreatedBy(orderUpdateDTO.getCreatedBy());
+            }
+
+            if (orderUpdateDTO.getPickupAddress() != null) {
+                order.setPickupAddress(orderUpdateDTO.getPickupAddress());
+            }
+
+            if (orderUpdateDTO.getDeliveryAddress() != null) {
+                order.setDeliveryAddress(orderUpdateDTO.getDeliveryAddress());
+            }
+
+            // Handle status update and date changes
+            if (orderUpdateDTO.getStatus() != null) {
+                Status newStatus = Status.valueOf(orderUpdateDTO.getStatus());
+                order.setStatus(newStatus); // This will automatically update the dates
+            }
+
+            // Update other date fields
+            if (orderUpdateDTO.getDataReceivedDate() != null) {
+                order.setDataReceivedDate(orderUpdateDTO.getDataReceivedDate());
+            }
+
+            if (orderUpdateDTO.getPickupDoneDate() != null) {
+                order.setPickupDoneDate(orderUpdateDTO.getPickupDoneDate());
+            }
+
+            if (orderUpdateDTO.getInTransitDate() != null) {
+                order.setInTransitDate(orderUpdateDTO.getInTransitDate());
+            }
+
+            if (orderUpdateDTO.getReachedDestinationDate() != null) {
+                order.setReachedDestinationDate(orderUpdateDTO.getReachedDestinationDate());
+            }
+
+            if (orderUpdateDTO.getOutForDeliveryDate() != null) {
+                order.setOutForDeliveryDate(orderUpdateDTO.getOutForDeliveryDate());
+            }
+
+            if (orderUpdateDTO.getDeliveredDate() != null) {
+                order.setDeliveredDate(orderUpdateDTO.getDeliveredDate());
+            }
+
+            return ResponseEntity.ok().body(new ApiResponse(orderRepository.save(order), true, 200, "updated"));
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse(false, 400, "order not found"));
+        }
+    }
+    // delete order admin
+    @Override
+    public ResponseEntity<ApiResponse> deleteOrder(Long id) {
+        Optional<Orders> optionalOrder = orderRepository.findById(id);
+
+        if (optionalOrder.isPresent()) {
+            orderRepository.deleteById(id);
+            return ResponseEntity.ok()
+                    .body(new ApiResponse(true, 200, "order deleted !"));
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse(false, 400, "order not found"));
+        }
+    }
+
+// get all order
+    @Override
+    public ResponseEntity<ApiResponse> getAllOrders( Integer page, Integer size) {
+
+       /* Pageable pageable = PageRequest.of(page,size);
+        Page<Object[]> ordersPage = orderRepository.findAllOrders(pageable);*/
+        Pageable pageable = PageRequest.of(page,size);
+        Page<Object[]>ordersPage = orderRepository.findAllOrders(pageable);
+
+        // Prepare list of orders
+        List<Map<String, Object>> ordersList = new ArrayList<>();
+        for (Object[] order : ordersPage.getContent()) {
+            Map<String, Object> orderMap = new HashMap<>();
+            orderMap.put("orderId", order[0]);
+
+            orderMap.put("orderDate", order[2]);
+            orderMap.put("createdBy", order[3]);
+            orderMap.put("pickupAddress", order[4]);
+            orderMap.put("deliveryAddress", order[5]);
+            ordersList.add(orderMap);
+        }
+
+        // Prepare the response with pagination metadata
+        Map<String, Object> pagination = new HashMap<>();
+        pagination.put("content", ordersList);
+        pagination.put("pageNumber", ordersPage.getNumber());
+        pagination.put("pageSize", ordersPage.getSize());
+        pagination.put("totalPages", ordersPage.getTotalPages());
+        pagination.put("totalElements", ordersPage.getTotalElements());
+        pagination.put("first", ordersPage.isFirst());
+        pagination.put("last", ordersPage.isLast());
+        return ResponseEntity.ok()
+                .body(new ApiResponse(pagination,true,200,"Orders fetched"));
+    }
 }
+
 
 
 

@@ -20,7 +20,7 @@ public interface UsersService {
     PersonalUser updatePersonalUser(Long id, String firstName, String lastName, String email);
     
     // Method to update BusinessUser details
-    BusinessUser updateBusinessUser(Long id, String firstName, String lastName, String email, String password, String companyName, Long contactNo);
+    BusinessUser updateBusinessUser(Long id, String firstName, String lastName, String email, String password, String companyName,String contactNo);
     
     
 }

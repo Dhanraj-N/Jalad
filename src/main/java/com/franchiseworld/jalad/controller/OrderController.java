@@ -7,7 +7,11 @@ import java.util.List;
 import java.util.Map;
 
 import com.franchiseworld.jalad.model.Status;
+import com.franchiseworld.jalad.modeldto.OrderDto;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -37,16 +41,14 @@ public class OrderController {
         return new ResponseEntity<>(savedOrder, HttpStatus.CREATED);
     }
 
-    //FindByContactNO All Courier.
-//    @GetMapping("/personal/findcontact")
-//    public ResponseEntity<List<PersonalCourierDTO>> findByContactNo(@RequestParam Long contactNo) {
-//        List<PersonalCourierDTO> couriers = orderService.findByContactNo(contactNo);
-//        return ResponseEntity.ok(couriers);
-//    }
     //findAllPersonsalOrders By Contact Number
     @GetMapping("/personal/findcontact")
-    public List<Object[]> getOrdersByContactNo(@RequestParam("contactNo") Long contactNo) {
-        return orderService.findOrdersByContactNo(contactNo);
+    public Page<Object[]> getOrdersByContactNo(@RequestParam("contactNo") String contactNo,
+                                               @RequestParam(value= "page",defaultValue = "0")int page,
+                                               @RequestParam(value = "size",defaultValue = "10")int size)
+    {
+        Pageable pageable= PageRequest.of(page,size);
+        return orderService.findOrdersByContactNo(contactNo,pageable);
     }
 
     //FindAllBusinessOrders Only Business Orders
@@ -55,13 +57,17 @@ public class OrderController {
         return orderService.findAllBusinessOrders();
     }
 
-
     //FindAllBusinessOrdersUserID Only Business Orders
 
     @GetMapping("/findBusinessOrdersByUserId/{userId}")
-    public ResponseEntity<List<Object[]>> findBusinessOrdersByUserId(@PathVariable Long userId) {
-        List<Object[]> businessOrders = orderService.findBusinessOrdersByUserId(userId);
+    public ResponseEntity<Page<Object[]>> findBusinessOrdersByUserId(@PathVariable Long userId,
+                                                                     @RequestParam(value = "page",defaultValue = "0")int page,
+                                                                     @RequestParam(value ="size",defaultValue = "10")int size)
+    {
+        Pageable pageable=PageRequest.of(page,size);
+        Page<Object[]> businessOrders=orderService.findBusinessOrdersByUserId(userId,pageable);
         return ResponseEntity.ok(businessOrders);
+
     }
 
     // findbyuserbyUserId
@@ -93,8 +99,7 @@ public class OrderController {
     }
 
 
-    //zone
-    //////// update status, zone id,zone detail
+    // update status, zone id,zone detail
     @PutMapping("/statusDetail/{orderId}")
     public ResponseEntity<Orders> updateOrderStatusAndZone(
             @PathVariable Long orderId,
@@ -103,6 +108,28 @@ public class OrderController {
 
         Orders updatedOrder = orderService.updateOrderStatusAndZone(orderId, status, zoneId);
         return ResponseEntity.ok(updatedOrder);
+    }
+
+    // update order details admin
+    @PatchMapping("updateOrder/{id}")
+    public ResponseEntity<ApiResponse> updateOrder(@PathVariable Long id, @RequestBody OrderDto orderUpdateDTO)
+    {
+        return orderService.updateOrder(id,orderUpdateDTO);
+    }
+
+    // delete order admin
+    @DeleteMapping("deleteOrder/{id}")
+    public ResponseEntity<ApiResponse> deleteOrder(@PathVariable Long id){
+        return  orderService.deleteOrder(id);
+    }
+
+    // get all orders admin
+    @GetMapping("getAllOrders")
+    public ResponseEntity<ApiResponse> getAllOrders(
+            @RequestParam(name = "page", required = false) Integer page,
+            @RequestParam(name = "size", required = false) Integer size){
+        return orderService.getAllOrders(page,size);
+
     }
 
 }

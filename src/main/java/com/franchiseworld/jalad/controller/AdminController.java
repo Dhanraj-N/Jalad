@@ -3,6 +3,7 @@ package com.franchiseworld.jalad.controller;
 import com.franchiseworld.jalad.ResponseHandler.ApiResponse;
 import com.franchiseworld.jalad.model.Admin;
 import com.franchiseworld.jalad.service.AdminService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,7 +23,7 @@ public class AdminController {
 
 
     @PostMapping("/createAdmin")
-    public ResponseEntity<ApiResponse> createAdmin(@RequestBody Admin admin){
+    public ResponseEntity<ApiResponse> createAdmin(@Valid @RequestBody Admin admin){
         return adminService.createAdmin(admin);
     }
 

@@ -74,7 +74,7 @@ public PersonalUser updatePersonalUser(Long id, String firstName, String lastNam
 }
 
 @Override
-public BusinessUser updateBusinessUser(Long id, String firstName, String lastName, String email, String password, String companyName, Long contactNo) {
+public BusinessUser updateBusinessUser(Long id, String firstName, String lastName, String email, String password, String companyName,String contactNo) {
     Optional<Users> optionalUser = usersRepository.findById(id);
 
     if (optionalUser.isPresent() && optionalUser.get() instanceof BusinessUser) {

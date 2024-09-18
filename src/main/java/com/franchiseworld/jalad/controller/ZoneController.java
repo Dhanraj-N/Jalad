@@ -6,6 +6,10 @@ import com.franchiseworld.jalad.model.Zone;
 import com.franchiseworld.jalad.service.ZoneService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -18,7 +22,7 @@ public class ZoneController {
     private ZoneService zoneService;
     ///
     @PostMapping("/create")
-    public ResponseEntity<Zone> createZone(@RequestBody Zone zone) {
+    public ResponseEntity<Zone> createZone(@Valid @RequestBody Zone zone) {
         Zone createdZone = zoneService.createZone(zone);
         return ResponseEntity.ok(createdZone);
     }
@@ -38,28 +42,48 @@ public class ZoneController {
     {
         return zoneService.updateZone(zoneId,zoneDetail);
     }*/
-    // Todays Order
-    @GetMapping("/{zoneId}/todayorder")
-    public ResponseEntity<List<Orders>> getAllTodayOrder(@PathVariable ("zoneId") Long zoneId)  //(@PathVariable Long zoneId)
-    {
-        return zoneService.getAllTodayOrder(zoneId);
-    }
-    @GetMapping("/{zoneId}/order")
-    public List<Orders> getAllOrderByZoneId(@PathVariable Long zoneId) {
-        return zoneService.getAllOrderByZoneId(zoneId);
-    }
+  // get all Todays Order
+  @GetMapping("/{zoneId}/todayorder")
+  public ResponseEntity<Page<Orders>> getAllTodayOrder(@PathVariable ("zoneId") Long zoneId,
+                                                       @RequestParam(defaultValue = "0") int page,
+                                                       @RequestParam(defaultValue = "10") int size)  //(@PathVariable Long zoneId)
+  {
+      Page<Orders> ordersPage=zoneService.getAllTodayOrder(zoneId,page,size);
+      return ResponseEntity.ok(ordersPage);
+      //return zoneService.getAllTodayOrder(zoneId);
+  }
+
+  // getAllOrderByZoneId
+  // Get paginated orders by zone ID
+  @GetMapping("/{zoneId}/orders")
+  public ResponseEntity<Page<Orders>> getOrderByZoneId(
+          @PathVariable Long zoneId,
+          @RequestParam(defaultValue = "0") int page,
+          @RequestParam(defaultValue = "10") int size) {
+
+      Pageable pageable = PageRequest.of(page, size);
+      Page<Orders> ordersPage = zoneService.getOrderByZoneId(zoneId, pageable);
+      return ResponseEntity.ok(ordersPage);
+  }
 
     // Endpoint to get all orders by zone name
     @GetMapping("/{zoneName}/orderName")
-    public ResponseEntity<List<Orders>> getAllOrderByZoneName(@RequestParam String zoneName) {
-        List<Orders> order = zoneService.getAllOrderByZoneName(zoneName);
-        if (order != null && !order.isEmpty())
+    public ResponseEntity<Page<Orders>> getAllOrderByZoneName(@PathVariable String zoneName,
+                                                              @RequestParam (defaultValue = "0") int page,
+                                                              @RequestParam (defaultValue = "10") int size )
+    {
+        Pageable pageable= PageRequest.of(page,size);
+        Page<Orders> orderPage =zoneService.getAllOrderByZoneName(zoneName,pageable);
+        if(orderPage.hasContent())
         {
-            return ResponseEntity.ok(order); // Return 200 OK with the list of orders
-        } else {
-            return ResponseEntity.notFound().build(); // Return 404 Not Found if no orders are found
+            return ResponseEntity.ok(orderPage);
+        }
+        else
+        {
+            return ResponseEntity.notFound().build();
         }
     }
+
 //getinformationbyzone id
     @GetMapping("/{zoneId}")
     public ResponseEntity<Zone> getZoneById(@PathVariable Long zoneId) {
