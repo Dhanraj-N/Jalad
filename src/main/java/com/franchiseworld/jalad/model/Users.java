@@ -1,13 +1,25 @@
 package com.franchiseworld.jalad.model;
 
-import java.util.List;
 import java.util.Set;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-
-import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorColumn;
+import jakarta.persistence.DiscriminatorType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Entity
@@ -40,83 +52,16 @@ public class Users {
     @Size(min = 10, max = 10, message = "Contact number must be exactly 10 digits")
     @Pattern(regexp = "^[0-9]*$", message = "Contact number must contain only digits")
     private String contactNo;
-/*    @NotNull(message = "Contact number is required")
-    @Size(min = 10, max = 10, message = "Contact number must be exactly 10 digits")
-    private String contactNo;*/
-
-    @JsonManagedReference
+    
+//    @JsonManagedReference
     @OneToMany(mappedBy = "users", cascade = CascadeType.ALL)
     private Set<Orders> orders;
+
+//    @JsonManagedReference
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    private User user;
+    
+    
+
 }
-
-    /*@JsonBackReference
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Query> queries;
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public Long getContactNo() {
-        return contactNo;
-    }
-
-    public void setContactNo(Long contactNo) {
-        this.contactNo = contactNo;
-    }
-
-    public Set<Orders> getOrders() {
-        return orders;
-    }
-
-    public void setOrders(Set<Orders> orders) {
-        this.orders = orders;
-    }
-
-    public List<Query> getQueries() {
-        return queries;
-    }
-
-    public void setQueries(List<Query> queries) {
-        this.queries = queries;
-    }*/
-
-
-
-
-

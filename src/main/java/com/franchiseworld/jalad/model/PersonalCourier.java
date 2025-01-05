@@ -1,14 +1,9 @@
 package com.franchiseworld.jalad.model;
 
 import java.time.LocalDate;
-import java.util.Set;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.ManyToOne;
 import lombok.Data;
 
 @Entity

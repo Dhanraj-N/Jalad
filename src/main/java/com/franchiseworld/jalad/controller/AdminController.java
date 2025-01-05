@@ -1,46 +1,111 @@
 package com.franchiseworld.jalad.controller;
 
-import com.franchiseworld.jalad.ResponseHandler.ApiResponse;
-import com.franchiseworld.jalad.model.Admin;
-import com.franchiseworld.jalad.service.AdminService;
-import jakarta.validation.Valid;
+import com.franchiseworld.jalad.model.Status;
+import com.franchiseworld.jalad.model.Zone;
+import com.franchiseworld.jalad.modeldto.OrderDto;
+import com.franchiseworld.jalad.modeldto.RateCalculator;
+import com.franchiseworld.jalad.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import com.franchiseworld.jalad.ResponseHandler.ApiResponse;
+import com.franchiseworld.jalad.model.Admin;
+
+import jakarta.validation.Valid;
+
+import java.util.List;
+import java.util.Map;
 
 @RestController
-@RequestMapping("/admin")
+@RequestMapping("/api/admin")
 public class AdminController {
-    @Autowired
+  @Autowired
     AdminService adminService;
+  @Autowired
+   private OrderService orderService;
+    @Autowired
+    private ZoneService zoneService;
+
+    @Autowired
+    private QueryService queryService;
+
+    @Autowired
+    private CalculatePriceService calculatePriceService;
 
 
-
-    @PostMapping("/createAdmin")
-    public ResponseEntity<ApiResponse> createAdmin(@Valid @RequestBody Admin admin){
-        return adminService.createAdmin(admin);
+    // Get summary of all orders by status
+    @GetMapping("/orders/status/count")
+    public ResponseEntity<Map<Status, Long>> countOrdersByStatus() {
+        Map<Status, Long> orderCounts = orderService.countOrdersByStatus();
+        System.out.println("print");
+        return ResponseEntity.ok(orderCounts);
     }
 
-    @PatchMapping("/updateAdmin")
-    public ResponseEntity<ApiResponse> updateAdmin(@RequestBody Admin admin){
-        return adminService.updateAdmin(admin);
+    // get all orders admin
+    @GetMapping("/orders")
+    public ResponseEntity<ApiResponse> getAllOrders(
+            @RequestParam(name = "page", required = false) Integer page,
+            @RequestParam(name = "size", required = false) Integer size){
+        return orderService.getAllOrders(page,size);
+
     }
 
-    @PostMapping("/reset-password")
-    public ResponseEntity<ApiResponse> resetPassword(@RequestParam("emailId") String emailId,
-                                                     @RequestParam("oldPassword") String oldPassword,
-                                                     @RequestParam("newPassword") String newPassword){
-        return adminService.resetPassword(emailId, oldPassword, newPassword);
+    // Calculate courier price
+    @PostMapping("/orders/calculate-price")
+    public double calculateCourierPrice(@RequestBody RateCalculator rateCalculator) {
+        return calculatePriceService.calculatePrice(rateCalculator);
     }
 
-    @GetMapping("/findZoneByCityAndState")
+  // Get all personal orders
+  @GetMapping("/AllPersonalOrders")
+    public List<Object[]> getAllPersonalOrders() {
+        return orderService.findAllPersonalOrders();
+    }
+
+    // Get all business orders
+    @GetMapping("/business/orders")
+    public List<Object[]> getAllBusinessOrders() {
+        return orderService.findAllBusinessOrders();
+    }
+    // Get all queries
+    @GetMapping("/queries")
+    public ResponseEntity<ApiResponse> getAllQueries() {
+        return queryService.getAllQueries();
+    }
+
+    // Update query status
+    @PutMapping("/queries/{id}/status")
+    public ResponseEntity<ApiResponse> updateStatus(@PathVariable Long id, @RequestParam String status) {
+        return queryService.updateStatus(id, status);
+    }
+
+    // Find zone by city and state
+    @GetMapping("/zones/search")
     public ResponseEntity<ApiResponse> findZoneByCityAndState(@RequestParam String city, @RequestParam String state) {
         return adminService.findZoneByCityAndState(city, state);
     }
+
+    // Update order details (admin)
+    @PatchMapping("/orders/{id}")
+    public ResponseEntity<ApiResponse> updateOrder(@PathVariable Long id, @RequestBody OrderDto orderUpdateDTO)
+    {
+        return orderService.updateOrder(id,orderUpdateDTO);
+    }
+
+    // Delete order (admin)
+    @DeleteMapping("/orders/{id}")
+    public ResponseEntity<ApiResponse> deleteOrder(@PathVariable Long id){
+        return  orderService.deleteOrder(id);
+    }
+
+
+    // Create zone
+    @PostMapping("/zones")
+    public ResponseEntity<Zone> createZone(@Valid @RequestBody Zone zone) {
+        Zone createdZone = zoneService.createZone(zone);
+        return ResponseEntity.ok(createdZone);
+    }
+
 }

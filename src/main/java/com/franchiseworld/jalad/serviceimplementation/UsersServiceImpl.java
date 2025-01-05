@@ -3,91 +3,118 @@ package com.franchiseworld.jalad.serviceimplementation;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import com.franchiseworld.jalad.ResponseHandler.ApiResponse;
 import com.franchiseworld.jalad.model.BusinessUser;
 import com.franchiseworld.jalad.model.PersonalUser;
+import com.franchiseworld.jalad.model.User;
 import com.franchiseworld.jalad.model.Users;
+import com.franchiseworld.jalad.modeldto.UsersDto;
 import com.franchiseworld.jalad.repo.UsersRepository;
 import com.franchiseworld.jalad.service.UsersService;
 
 @Service
 public class UsersServiceImpl implements UsersService {
-	
+
 	@Autowired
 	private UsersRepository usersRepository;
-
-
-    
-@Override
-public Users savePersonalUsers(PersonalUser personalUser) {
-	return usersRepository.save(personalUser);
-}
+	
+	@Autowired
+    private UserDetailsServiceImpl userDetailsService;
 
 @Override
-public Users saveBusinessUsers(BusinessUser businessUser) {
-	return usersRepository.save(businessUser);
-}
-
-@Override
-public ResponseEntity<ApiResponse> loginUser(String email, String password) {
-    try {
-        Optional<Users> existingUser = usersRepository.findByEmail(email);
-
-        if (existingUser.isPresent()) {
-            Users user = existingUser.get();
-
-            // Check if the password matches
-            if (user.getPassword().equals(password)) {
-                return ResponseEntity.ok()
-                    .body(new ApiResponse(user, true, 200, "Login successful"));
-            } else {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new ApiResponse(false, 401, "Invalid email or password"));
-            }
-        }
-
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-            .body(new ApiResponse(false, 404, "User not found with email: " + email));
-    } catch (Exception e) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(new ApiResponse(false, 500, "Internal Server Error"));
+public UsersDto updatePersonalUser(String currentUsername, UsersDto userDto) {
+    // Fetch the current user details
+    Optional<User> userOptional = userDetailsService.findByEmail(currentUsername);
+    if (userOptional.isEmpty()) {
+        return null; // or throw an exception
     }
-}
 
-@Override
-public PersonalUser updatePersonalUser(Long id, String firstName, String lastName, String email) {
-    Optional<Users> optionalUser = usersRepository.findById(id);
+    User currentUser = userOptional.get();
 
-    if (optionalUser.isPresent() && optionalUser.get() instanceof PersonalUser) {
-        PersonalUser personalUser = (PersonalUser) optionalUser.get();
-        personalUser.setFirstName(firstName);
-        personalUser.setLastName(lastName);
-        personalUser.setEmail(email);
-        return usersRepository.save(personalUser); // Save updated PersonalUser
+    // Fetch the corresponding Users entity
+    Optional<Users> usersOptional = usersRepository.findByUserId(currentUser.getId());
+    if (usersOptional.isEmpty()) {
+        return null; // or throw an exception
+    }
+
+    Users usersEntity = usersOptional.get();
+
+    // Update the personal user details
+    if (usersEntity instanceof PersonalUser) {
+        usersEntity.setFirstName(userDto.getFirstName());
+        usersEntity.setLastName(userDto.getLastName());
+//        usersEntity.setEmail(userDto.getEmail());
+
+        // Save the updated Users entity
+        Users updatedUser = usersRepository.save(usersEntity);
+
+        // Convert back to UserDto
+        return pconvertToDto(updatedUser);
     } else {
-        throw new IllegalArgumentException("PersonalUser not found with id: " + id);
+        return null; // Not a PersonalUser, handle accordingly
     }
+}
+//Method to convert Users entity to UserDto
+private UsersDto pconvertToDto(Users users) {
+ UsersDto dto = new UsersDto();
+ dto.setId(users.getId());
+ dto.setFirstName(users.getFirstName());
+ dto.setLastName(users.getLastName());
+// dto.setEmail(users.getEmail());
+
+ return dto;	
 }
 
 @Override
-public BusinessUser updateBusinessUser(Long id, String firstName, String lastName, String email, String password, String companyName,String contactNo) {
-    Optional<Users> optionalUser = usersRepository.findById(id);
+public UsersDto updateBusinessUser(String currentUsername, UsersDto userDto) {
+    // Fetch the current user details
+    Optional<User> userOptional = userDetailsService.findByEmail(currentUsername);
+    if (userOptional.isEmpty()) {
+        return null; // or throw an exception
+    }
 
-    if (optionalUser.isPresent() && optionalUser.get() instanceof BusinessUser) {
-        BusinessUser businessUser = (BusinessUser) optionalUser.get();
-        businessUser.setFirstName(firstName);
-        businessUser.setLastName(lastName);
-        businessUser.setEmail(email);
-        businessUser.setPassword(password);
-        businessUser.setCompanyName(companyName);
-        businessUser.setContactNo(contactNo);
-        return usersRepository.save(businessUser); // Save updated BusinessUser
+    User currentUser = userOptional.get();
+
+    // Fetch the corresponding Users entity
+    Optional<Users> usersOptional = usersRepository.findByUserId(currentUser.getId());
+    if (usersOptional.isEmpty()) {
+        return null; // or throw an exception
+    }
+
+    BusinessUser usersEntity = (BusinessUser) usersOptional.get();
+
+    // Update the Business user details
+    if (usersEntity instanceof BusinessUser) {
+        usersEntity.setFirstName(userDto.getFirstName());
+        usersEntity.setLastName(userDto.getLastName());
+//        usersEntity.setEmail(userDto.getEmail());
+//        usersEntity.setPassword(userDto.getPassword());
+        usersEntity.setCompanyName(userDto.getCompanyName());
+        usersEntity.setContactNo(userDto.getContactNo());
+
+        // Save the updated Users entity
+        BusinessUser updatedUser = usersRepository.save(usersEntity);
+
+        // Convert back to UserDto
+        return bconvertToDto(updatedUser);
     } else {
-        throw new IllegalArgumentException("BusinessUser not found with id: " + id);
+        return null; 
     }
 }
+//Method to convert Users entity to UserDto
+private UsersDto bconvertToDto(BusinessUser users) {
+
+	UsersDto dto = new UsersDto();
+	dto.setId(users.getId());
+	dto.setFirstName(users.getFirstName());
+	dto.setLastName(users.getLastName());
+//	dto.setEmail(users.getEmail());
+//	dto.setPassword(users.getPassword());
+	dto.setCompanyName(users.getCompanyName());
+	dto.setContactNo(users.getContactNo());
+
+	return dto;	
+	}
+
 }

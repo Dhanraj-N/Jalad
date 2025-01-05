@@ -1,11 +1,20 @@
 package com.franchiseworld.jalad.model;
 
 import java.time.LocalDate;
-import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorColumn;
+import jakarta.persistence.DiscriminatorType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
@@ -29,20 +38,13 @@ public class Orders {
 
     @ManyToOne
     @JoinColumn(name = "id", nullable = false)
-    @JsonBackReference
+//    @JsonBackReference
     private Users users;
 
     @ManyToOne
   @JoinColumn(name = "zone_id", nullable = false)
-  private Zone zone;
-/*
-   // order chnages in zone details
-
-    public Orders(Long orderId, Status status) {
-        this.orderId = orderId;
-        this.status = status;
-    }*/
-
+//    @JsonBackReference
+    private Zone zone;
 
     //Handle only zone manager
     @Enumerated(EnumType.STRING)

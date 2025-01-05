@@ -4,46 +4,211 @@ package com.franchiseworld.jalad.serviceimplementation;
 
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
-import com.franchiseworld.jalad.model.*;
-import com.franchiseworld.jalad.modeldto.OrderDto;
-import com.franchiseworld.jalad.repo.ZoneRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.franchiseworld.jalad.ResponseHandler.ApiResponse;
+import com.franchiseworld.jalad.model.BusinessCourier;
+import com.franchiseworld.jalad.model.Orders;
+import com.franchiseworld.jalad.model.PersonalCourier;
+import com.franchiseworld.jalad.model.Status;
+import com.franchiseworld.jalad.model.User;
+import com.franchiseworld.jalad.model.Users;
+import com.franchiseworld.jalad.model.Zone;
+import com.franchiseworld.jalad.modeldto.OrderDto;
 import com.franchiseworld.jalad.repo.OrderRepository;
+import com.franchiseworld.jalad.repo.UsersRepository;
+import com.franchiseworld.jalad.repo.ZoneRepository;
 import com.franchiseworld.jalad.service.OrderService;
 
 @Service
 public class OrderServiceImpl implements OrderService {
 
-    @Autowired
-    private OrderRepository orderRepository;
-    @Autowired
-    private ZoneRepository zoneRepository;
+	 @Autowired
+	    private UsersRepository usersRepository;
 
-    @Override
-    public Orders savePersonalCourier(PersonalCourier personalCourier) {
-        // Business logic for saving a PersonalCourier order
-        personalCourier.setStatus(Status.DATA_RECEIVED);
-        return orderRepository.save(personalCourier);
-    }
+	    @Autowired
+	    private ZoneRepository zoneRepository; 
+	    
+	    @Autowired
+	    private OrderRepository orderRepository;
 
-    @Override
-    public Orders saveBusinessCourier(BusinessCourier businessCourier) {
-        // Business logic for saving a BusinessCourier order
-        businessCourier.setStatus(Status.DATA_RECEIVED);
-        return orderRepository.save(businessCourier);
-    }
+	    @Autowired
+	    private UserDetailsServiceImpl userDetailsService;
+	    
+	 // Get logged-in user
+	    private Users getLoggedInUser() {
+	        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+	        String currentUsername = authentication.getName();
+	        
+	        Optional<User> userOptional = userDetailsService.findByEmail(currentUsername);
+	        if (userOptional.isPresent()) {
+	            Optional<Users> usersOptional = usersRepository.findByEmail(userOptional.get().getEmail());
+	            if (usersOptional.isPresent()) {
+	                return usersOptional.get();
+	            }
+	        }
+	        throw new RuntimeException("Logged in user not found");
+	    }
+	   
+    
+	    @Override
+	    public OrderDto createPersonalCourier(OrderDto orderDto) {
+	        // Fetch the authenticated user from the security context
+	        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+	        String currentUsername = authentication.getName();
+
+	        // Fetch the user details using the username (email)
+	        Optional<User> userOptional = userDetailsService.findByEmail(currentUsername);
+	        if (userOptional.isEmpty()) {
+	            throw new RuntimeException("User not found");
+	        }
+
+	        User currentUser = userOptional.get();
+
+	        // Fetch the corresponding Users entity
+	        Optional<Users> usersOptional = usersRepository.findByEmail(currentUser.getEmail());
+	        if (usersOptional.isEmpty()) {
+	            throw new RuntimeException("User entity not found");
+	        }
+
+	        Users usersEntity = usersOptional.get();
+
+	        // Fetch all default zones
+	        List<Zone> defaultZones = zoneRepository.findDefaultZone();
+	        if (defaultZones.isEmpty()) {
+	            throw new RuntimeException("No default zones found");
+	        }
+
+	        // Choose the first default zone from the list
+	        Zone selectedZone = defaultZones.get(0);
+
+	        // Create an Orders entity from the OrderDto
+	        PersonalCourier personalCourier = new PersonalCourier();
+	        personalCourier.setCreatedBy(orderDto.getCreatedBy());
+	        personalCourier.setPickupAddress(orderDto.getPickupAddress());
+	        personalCourier.setDeliveryAddress(orderDto.getDeliveryAddress());
+	        personalCourier.setContactNo(orderDto.getContactNo());
+	        personalCourier.setPackageDetails(orderDto.getPackageDetails());
+	        personalCourier.setPackageCover(orderDto.getPackageCover());
+	        personalCourier.setPackageSize(orderDto.getPackageSize());
+	        personalCourier.setPickupDate(orderDto.getPickupDate());
+
+	        personalCourier.setUsers(usersEntity); // Associate the user
+	        personalCourier.setZone(selectedZone); // Set the selected Zone to the order
+	        personalCourier.setStatus(Status.DATA_RECEIVED); // Set initial status
+
+	        // Save the order
+	        Orders savedOrder = orderRepository.save(personalCourier); // Adjust to your actual repository method
+
+	        // Convert to OrderDto
+	        return convertToDto(savedOrder);
+	    }
+	    
+	    @Override
+	    public OrderDto createBusinessCourier(OrderDto orderDto) {
+	        // Fetch the authenticated user from the security context
+	        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+	        String currentUsername = authentication.getName();
+
+	        // Fetch the user details using the username (email)
+	        Optional<User> userOptional = userDetailsService.findByEmail(currentUsername);
+	        if (userOptional.isEmpty()) {
+	            throw new RuntimeException("User not found");
+	        }
+
+	        User currentUser = userOptional.get();
+
+	        // Fetch the corresponding Users entity
+	        Optional<Users> usersOptional = usersRepository.findByEmail(currentUser.getEmail());
+	        if (usersOptional.isEmpty()) {
+	            throw new RuntimeException("User entity not found");
+	        }
+
+	        Users usersEntity = usersOptional.get();
+
+	        // Fetch all default zones
+	        List<Zone> defaultZones = zoneRepository.findDefaultZone();
+	        if (defaultZones.isEmpty()) {
+	            throw new RuntimeException("No default zones found");
+	        }
+
+	        // Choose the first default zone from the list
+	        Zone selectedZone = defaultZones.get(0);
+
+	        // Create an Orders entity from the OrderDto
+	        BusinessCourier businessCourier = new BusinessCourier();
+	        businessCourier.setCreatedBy(orderDto.getCreatedBy());
+	        businessCourier.setPickupAddress(orderDto.getPickupAddress());
+	        businessCourier.setDeliveryAddress(orderDto.getDeliveryAddress());
+	        businessCourier.setPackageDetails(orderDto.getPackageDetails());
+	        businessCourier.setPackageCover(orderDto.getPackageCover());
+	        businessCourier.setPackageSize(orderDto.getPackageSize());
+	        businessCourier.setPickupDate(orderDto.getPickupDate());
+
+	        businessCourier.setUsers(usersEntity); // Associate the user
+	        businessCourier.setZone(selectedZone); // Set the selected Zone to the order
+	        businessCourier.setStatus(Status.DATA_RECEIVED); // Set initial status
+
+	        // Save the order
+	        Orders savedOrder = orderRepository.save(businessCourier); // Adjust to your actual repository method
+
+	        // Convert to OrderDto
+	        return convertToDto(savedOrder);
+	    }
+	    // Generalized method to convert Orders to OrderDto
+	    private OrderDto convertToDto(Orders order) {
+	        OrderDto orderDto = new OrderDto();
+	        orderDto.setOrderId(order.getOrderId());
+	        orderDto.setCreatedBy(order.getCreatedBy());
+	        orderDto.setPickupAddress(order.getPickupAddress());
+	        orderDto.setDeliveryAddress(order.getDeliveryAddress());
+	        
+	        if (order instanceof BusinessCourier) {
+	            BusinessCourier businessCourier = (BusinessCourier) order;
+	            orderDto.setPackageDetails(businessCourier.getPackageDetails());
+	            orderDto.setPackageCover(businessCourier.getPackageCover());
+	            orderDto.setPackageSize(businessCourier.getPackageSize());
+	            orderDto.setPickupDate(businessCourier.getPickupDate());
+	        }else if (order instanceof PersonalCourier) {
+	            PersonalCourier personalCourier = (PersonalCourier) order;
+	            orderDto.setContactNo(personalCourier.getContactNo());
+	            orderDto.setPackageDetails(personalCourier.getPackageDetails());
+	            orderDto.setPackageCover(personalCourier.getPackageCover());
+	            orderDto.setPackageSize(personalCourier.getPackageSize());
+	            orderDto.setPickupDate(personalCourier.getPickupDate());
+	        }
+
+//	        if (order instanceof PersonalCourier) {
+//	            PersonalCourier personalCourier = (PersonalCourier) order;
+//	            orderDto.setContactNo(personalCourier.getContactNo());
+//	            orderDto.setPackageDetails(personalCourier.getPackageDetails());
+//	            orderDto.setPackageCover(personalCourier.getPackageCover());
+//	            orderDto.setPackageSize(personalCourier.getPackageSize());
+//	            orderDto.setPickupDate(personalCourier.getPickupDate());
+//	        } else if (order instanceof BusinessCourier) {
+//	            BusinessCourier businessCourier = (BusinessCourier) order;
+//	            orderDto.setPackageDetails(businessCourier.getPackageDetails());
+//	            orderDto.setPackageCover(businessCourier.getPackageCover());
+//	            orderDto.setPackageSize(businessCourier.getPackageSize());
+//	            orderDto.setPickupDate(businessCourier.getPickupDate());
+//	        }
+
+	        return orderDto;
+	    }
 
     //FindByContactNO All Courier.
     @Override
@@ -60,27 +225,54 @@ public class OrderServiceImpl implements OrderService {
 
     //FindAllBusinessOrdersByUserID Only Business Orders
 
+//    @Override
+//    public Page<Object[]> findBusinessOrdersByUserId(Long userId,Pageable pageable)
+//    {
+//        return orderRepository.findBusinessOrdersByUserId(userId,pageable);
+//
+//    }
+    
     @Override
-    public Page<Object[]> findBusinessOrdersByUserId(Long userId,Pageable pageable)
-    {
-        return orderRepository.findBusinessOrdersByUserId(userId,pageable);
+    public ResponseEntity<Page<Object[]>> findBusinessOrdersForLoggedInUser() {
+        Users loggedInUser = getLoggedInUser();
+        Pageable pageable = PageRequest.of(0, 10); // Example pagination logic
 
+        Page<Object[]> businessOrders = orderRepository.findBusinessOrdersByUserId(loggedInUser.getId(), pageable);
+        return ResponseEntity.ok(businessOrders);
     }
 
     //Count of StatusOrders(Status:- pending, deliverdy etc)
+//    @Override
+//    public Map<Status, Long> countBusinessOrdersByStatusAndUserId(Long userId) {
+//        List<Object[]> results = orderRepository.countBusinessOrdersByStatusAndUserId(userId);
+//        Map<Status, Long> statusCountMap = new HashMap<>();
+//
+//        for (Object[] result : results) {
+//            Status status = (Status) result[1]; // Cast to Status enum
+//            Long count = (Long) result[0]; // Cast to Long
+//            statusCountMap.put(status, count);
+//        }
+//
+//        return statusCountMap;
+//    }
     @Override
-    public Map<Status, Long> countBusinessOrdersByStatusAndUserId(Long userId) {
-        List<Object[]> results = orderRepository.countBusinessOrdersByStatusAndUserId(userId);
-        Map<Status, Long> statusCountMap = new HashMap<>();
-
+    public ResponseEntity<Map<Status, Long>> countBusinessOrdersByStatusForLoggedInUser() {
+        Users loggedInUser = getLoggedInUser();
+        
+        // Fetch the list of status and counts
+        List<Object[]> results = orderRepository.countBusinessOrdersByStatusAndUserId(loggedInUser.getId());
+        
+        // Convert the list into a map
+        Map<Status, Long> orderCounts = new HashMap<>();
         for (Object[] result : results) {
-            Status status = (Status) result[1]; // Cast to Status enum
-            Long count = (Long) result[0]; // Cast to Long
-            statusCountMap.put(status, count);
+            Status status = (Status) result[0];   // The order status
+            Long count = (Long) result[1];        // The count of orders
+            orderCounts.put(status, count);
         }
-
-        return statusCountMap;
+        
+        return ResponseEntity.ok(orderCounts);
     }
+
 
     //GetOrdersDates
     @Override
@@ -113,7 +305,7 @@ public class OrderServiceImpl implements OrderService {
 
 
     //getOrdersByuserid
-    @Override
+   /* @Override
     public ResponseEntity<ApiResponse> getOrdersByUserId(Long id) {
         List<Orders> orders = orderRepository.findByUserId(id);
         if (!orders.isEmpty()) {
@@ -122,6 +314,18 @@ public class OrderServiceImpl implements OrderService {
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ApiResponse(false, 404, "Courier not found for id " + id));
+        }
+    }*/
+    //new change 18
+    @Override
+    public ResponseEntity<ApiResponse> getOrdersByUserId(Long id, Pageable pageable) {
+        Page<Orders> ordersPage = orderRepository.findByUserId(id, pageable);
+        if (ordersPage.hasContent()) {
+            return ResponseEntity.ok()
+                    .body(new ApiResponse(ordersPage.getContent(), true, 200, "Orders found successfully"));
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse(false, 404, "No orders found for user id " + id));
         }
     }
 
@@ -241,46 +445,50 @@ public class OrderServiceImpl implements OrderService {
         if (optionalOrder.isPresent()) {
             orderRepository.deleteById(id);
             return ResponseEntity.ok()
-                    .body(new ApiResponse(true, 200, "order deleted !"));
-        } else {
+                    .body(new ApiResponse(optionalOrder,true, 200, "order deleted !"));
+                                   //      .body(new ApiResponse(true, 200, "order deleted !"));
+
+        }
+        else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ApiResponse(false, 400, "order not found"));
         }
     }
 
-// get all order
+// get all order  (new  change 19 - 09-2024 (Suhas sir)po)
+@Override
+public ResponseEntity<ApiResponse> getAllOrders( Integer page, Integer size) {
+    Pageable pageable = PageRequest.of(page, size);
+    Page<Orders> ordersPage = orderRepository.findAll(pageable);
+
+    // Prepare list of orders without 'shippingId'
+    List<Map<String, Object>> ordersList = new ArrayList<>();
+    for (Orders order : ordersPage.getContent()) {
+        Map<String, Object> orderMap = new HashMap<>();
+        orderMap.put("orderId", order.getOrderId());
+        orderMap.put("orderDate", order.getOrderDate());
+        orderMap.put("createdBy", order.getCreatedBy());
+        orderMap.put("pickupAddress", order.getPickupAddress());
+        orderMap.put("deliveryAddress", order.getDeliveryAddress());
+        ordersList.add(orderMap);
+    }
+
+    // Prepare the response with pagination metadata
+    Map<String, Object> pagination = new HashMap<>();
+    pagination.put("content", ordersList);
+    pagination.put("pageNumber", ordersPage.getNumber());
+    pagination.put("pageSize", ordersPage.getSize());
+    pagination.put("totalPages", ordersPage.getTotalPages());
+    pagination.put("totalElements", ordersPage.getTotalElements());
+    pagination.put("first", ordersPage.isFirst());
+    pagination.put("last", ordersPage.isLast());
+    return ResponseEntity.ok()
+            .body(new ApiResponse(pagination,true,200,"Orders fetched"));
+}
+// // Get all personal orders
     @Override
-    public ResponseEntity<ApiResponse> getAllOrders( Integer page, Integer size) {
-
-       /* Pageable pageable = PageRequest.of(page,size);
-        Page<Object[]> ordersPage = orderRepository.findAllOrders(pageable);*/
-        Pageable pageable = PageRequest.of(page,size);
-        Page<Object[]>ordersPage = orderRepository.findAllOrders(pageable);
-
-        // Prepare list of orders
-        List<Map<String, Object>> ordersList = new ArrayList<>();
-        for (Object[] order : ordersPage.getContent()) {
-            Map<String, Object> orderMap = new HashMap<>();
-            orderMap.put("orderId", order[0]);
-
-            orderMap.put("orderDate", order[2]);
-            orderMap.put("createdBy", order[3]);
-            orderMap.put("pickupAddress", order[4]);
-            orderMap.put("deliveryAddress", order[5]);
-            ordersList.add(orderMap);
-        }
-
-        // Prepare the response with pagination metadata
-        Map<String, Object> pagination = new HashMap<>();
-        pagination.put("content", ordersList);
-        pagination.put("pageNumber", ordersPage.getNumber());
-        pagination.put("pageSize", ordersPage.getSize());
-        pagination.put("totalPages", ordersPage.getTotalPages());
-        pagination.put("totalElements", ordersPage.getTotalElements());
-        pagination.put("first", ordersPage.isFirst());
-        pagination.put("last", ordersPage.isLast());
-        return ResponseEntity.ok()
-                .body(new ApiResponse(pagination,true,200,"Orders fetched"));
+    public List<Object[]> findAllPersonalOrders() {
+        return orderRepository.findAllPersonalOrders();
     }
 }
 

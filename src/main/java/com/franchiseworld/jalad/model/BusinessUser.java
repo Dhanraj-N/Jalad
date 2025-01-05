@@ -9,8 +9,7 @@ import lombok.Data;
 @Data
 @DiscriminatorValue("Business")
 public class BusinessUser extends Users {
-	
-	private String companyName;	
-	private double companyShippingVolume;
 
+	private String companyName;
+	private double companyShippingVolume;
 }

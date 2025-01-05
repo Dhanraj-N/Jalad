@@ -1,8 +1,9 @@
 package com.franchiseworld.jalad.service;
 
+import org.springframework.http.ResponseEntity;
+
 import com.franchiseworld.jalad.ResponseHandler.ApiResponse;
 import com.franchiseworld.jalad.model.Admin;
-import org.springframework.http.ResponseEntity;
 
 
 public interface AdminService {
@@ -10,8 +11,8 @@ public interface AdminService {
     ResponseEntity<ApiResponse> createAdmin(Admin admin);
 
 
-    ResponseEntity<ApiResponse> updateAdmin(Admin admin);
+ /*  ResponseEntity<ApiResponse> updateAdmin(Admin admin);
 
-    ResponseEntity<ApiResponse> resetPassword(String emailId, String oldPassword, String newPassword);
+    ResponseEntity<ApiResponse> resetPassword(String emailId, String oldPassword, String newPassword);*/
 }
 

@@ -1,6 +1,10 @@
 
 package com.franchiseworld.jalad.serviceimplementation;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+
 import com.franchiseworld.jalad.ResponseHandler.ApiResponse;
 import com.franchiseworld.jalad.model.Query;
 import com.franchiseworld.jalad.model.QueryStatus;
@@ -8,9 +12,6 @@ import com.franchiseworld.jalad.model.Users;
 import com.franchiseworld.jalad.repo.QueryRepository;
 import com.franchiseworld.jalad.repo.UsersRepository;
 import com.franchiseworld.jalad.service.QueryService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
 
 @Service
 public class QueryServiceImpl implements QueryService {

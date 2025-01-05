@@ -8,5 +8,7 @@ import com.franchiseworld.jalad.model.Users;
 
 public interface UsersRepository extends JpaRepository<Users, Integer> {
 	public Optional<Users> findByEmail(String email);
+	Boolean existsByEmail(String email);
 	public Optional<Users> findById(long id);
+	Optional<Users> findByUserId(Long userId);
 }

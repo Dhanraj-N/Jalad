@@ -1,13 +1,14 @@
 package com.franchiseworld.jalad.service;
 
-import com.franchiseworld.jalad.ResponseHandler.ApiResponse;
-import com.franchiseworld.jalad.model.Orders;
-import com.franchiseworld.jalad.model.Zone;
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import java.util.List;
-import java.util.Optional;
+
+import com.franchiseworld.jalad.ResponseHandler.ApiResponse;
+import com.franchiseworld.jalad.model.Orders;
+import com.franchiseworld.jalad.model.Zone;
 
 public interface ZoneService {
     Zone createZone(Zone zone);
@@ -18,7 +19,7 @@ public interface ZoneService {
     /*ResponseEntity<ApiResponse> updateZone(Long zoneId, Zone zoneDetail);*/
 
     // todays orders
-    Page<Orders> getAllTodayOrder(Long zoneId, int page, int size);
+    public ResponseEntity<ApiResponse> getAllTodayOrder(Long zoneId, int page, int size);
 
     //getAllOrderByZoneId
     Page<Orders> getOrderByZoneId(Long zoneId, Pageable pageable);

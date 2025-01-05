@@ -1,7 +1,7 @@
 package com.franchiseworld.jalad.modeldto;
 
 public class RateCalculator {
-	
+
 	private double weight;
     private double distance;
 	public RateCalculator(double weight, double distance) {

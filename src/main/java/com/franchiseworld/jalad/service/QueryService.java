@@ -2,6 +2,7 @@
 package com.franchiseworld.jalad.service;
 
 import org.springframework.http.ResponseEntity;
+
 import com.franchiseworld.jalad.ResponseHandler.ApiResponse;
 import com.franchiseworld.jalad.model.Query;
 

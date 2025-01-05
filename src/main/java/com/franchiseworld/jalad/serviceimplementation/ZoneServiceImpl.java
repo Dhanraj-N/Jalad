@@ -1,11 +1,12 @@
 package com.franchiseworld.jalad.serviceimplementation;
 
-import com.franchiseworld.jalad.ResponseHandler.ApiResponse;
-import com.franchiseworld.jalad.model.Orders;
-import com.franchiseworld.jalad.model.Zone;
-import com.franchiseworld.jalad.repo.OrderRepository;
-import com.franchiseworld.jalad.repo.ZoneRepository;
-import com.franchiseworld.jalad.service.ZoneService;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -13,9 +14,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
+
+import com.franchiseworld.jalad.ResponseHandler.ApiResponse;
+import com.franchiseworld.jalad.model.Orders;
+import com.franchiseworld.jalad.model.Zone;
+import com.franchiseworld.jalad.repo.OrderRepository;
+import com.franchiseworld.jalad.repo.ZoneRepository;
+import com.franchiseworld.jalad.service.ZoneService;
 
 @Service
 public class ZoneServiceImpl implements ZoneService {
@@ -64,27 +69,63 @@ public class ZoneServiceImpl implements ZoneService {
     }*/
 
     // todays orders
-    @Override
+    /*@Override
     public Page<Orders> getAllTodayOrder(Long zoneId, int page, int size) {
         LocalDate today = LocalDate.now();  //new comment
-        PageRequest pageRequest = PageRequest.of(page, size);
+        Pageable pageRequest = PageRequest.of(page, size);
         return orderRepository.findByZone_ZoneIdAndOrderDate(zoneId, today, pageRequest);
 
+    }*/
+    /////////////////new change
+    @Override
+    public ResponseEntity<ApiResponse> getAllTodayOrder(Long zoneId, int page, int size) {
+        LocalDate today = LocalDate.now();  // Get today's date
+        Pageable pageRequest = PageRequest.of(page, size);
+
+        // Fetch the paginated data
+        Page<Orders> ordersPage = orderRepository.findByZone_ZoneIdAndOrderDate(zoneId, today, pageRequest);
+
+        // Prepare list of orders (without redundant pagination in content)
+        List<Map<String, Object>> ordersList = new ArrayList<>();
+        for (Orders order : ordersPage.getContent()) {
+            Map<String, Object> orderMap = new HashMap<>();
+            orderMap.put("orderId", order.getOrderId());
+            orderMap.put("orderDate", order.getOrderDate());
+            orderMap.put("createdBy", order.getCreatedBy());
+            orderMap.put("pickupAddress", order.getPickupAddress());
+            orderMap.put("deliveryAddress", order.getDeliveryAddress());
+            ordersList.add(orderMap);
+        }
+
+        // Prepare the final response map with pagination and orders content
+        Map<String, Object> responseMap = new HashMap<>();
+        responseMap.put("content", ordersList);
+        responseMap.put("pageNumber", ordersPage.getNumber());
+        responseMap.put("pageSize", ordersPage.getSize());
+        responseMap.put("totalPages", ordersPage.getTotalPages());
+        responseMap.put("totalElements", ordersPage.getTotalElements());
+        responseMap.put("first", ordersPage.isFirst());
+        responseMap.put("last", ordersPage.isLast());
+
+        return ResponseEntity.ok().body(new ApiResponse(responseMap,true,200,"Data fetched"));
     }
     // Method to get all orders by zone ID
-    public Page<Orders> getOrderByZoneId(Long zoneId, Pageable pageable) {
+    @Override
+	public Page<Orders> getOrderByZoneId(Long zoneId, Pageable pageable) {
         return orderRepository.findByZone_ZoneId(zoneId, pageable);
     }
 
 
     // Method to get all orders by zone name
-    public Page<Orders> getAllOrderByZoneName(String zoneName, Pageable pageable)
+    @Override
+	public Page<Orders> getAllOrderByZoneName(String zoneName, Pageable pageable)
     {
         return orderRepository.findByZone_Name(zoneName,pageable);
     }
 
     // Method to get Zone by zone ID
-    public Zone getZoneById(Long zoneId) {
+    @Override
+	public Zone getZoneById(Long zoneId) {
         Optional<Zone> zone = zoneRepository.findById(zoneId);
         return zone.orElse(null); // Return the zone if found, otherwise return null
     }

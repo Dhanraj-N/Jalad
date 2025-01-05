@@ -20,4 +20,5 @@ public class PersonalUser extends Users {
 	private String city;
 	@Pattern(regexp = "^[0-9]{6}$", message = "Pincode must be exactly 6 digits")
 	private String pincode;
+
 }
